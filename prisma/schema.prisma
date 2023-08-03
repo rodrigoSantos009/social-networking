@@ -1,0 +1,88 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         String   @id @default(uuid())
+  name       String
+  email      String   @unique
+  password   String
+  bio        String?
+  picture    String?
+  site       String?
+  site_admin Boolean  @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  Posts   Post[]
+  Comment Comment[]
+  Like    Like[]
+  Following  Follow[] @relation(name: "following")
+  Followed  Follow[] @relation(name: "followed")
+
+  @@map("users")
+}
+
+model Post {
+  id          String    @id @default(uuid())
+  image       String?
+  description String?
+  Comments    Comment[]
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+
+  User    User?  @relation(fields: [user_id], references: [id])
+  user_id String
+  Like    Like[]
+
+  @@map("posts")
+}
+
+model Comment {
+  id         String   @id @default(uuid())
+  comment    String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  user_id String
+  User    User?  @relation(fields: [user_id], references: [id])
+  post_id String
+  Post    Post?  @relation(fields: [post_id], references: [id])
+
+  @@map("comments")
+}
+
+model Like {
+  id         String   @id @default(uuid())
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  user_id String
+  User    User?  @relation(fields: [user_id], references: [id])
+  post_id String
+  Post    Post?  @relation(fields: [post_id], references: [id])
+
+  @@map("likes")
+}
+
+model Follow {
+  following_user_id String
+  followed_user_id  String
+
+  following User @relation(name: "following", fields: [following_user_id], references: [id])
+  followed  User @relation(name: "followed", fields: [followed_user_id], references: [id])
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@id([following_user_id, followed_user_id])
+  @@map("follows")
+}
