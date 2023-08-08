@@ -10,7 +10,7 @@ export class UserUseCase {
   constructor(private userRepository: UserRepository) {}
 
   async execute(data: UserDTO) {
-    const UserAlreadyExists = await this.userRepository.getUserByEmail(
+    const UserAlreadyExists = await this.getUserByEmail(
       data.email
     );
     if (UserAlreadyExists) throw UserError.UserAlreadyExists();
@@ -22,8 +22,9 @@ export class UserUseCase {
   }
 
   async getUserByEmail(email: string) {
-    const user = await this.userRepository.getUserByEmail(email);
-    if (!user) throw UserError.UserNotFound();
+    const users = await this.getUsers();
+    const user = users.find(user => user.email === email);
+
     return user;
   }
 
@@ -35,7 +36,7 @@ export class UserUseCase {
   }
 
   async authenticate(email: string, password: string) {
-    const userExists = await this.userRepository.getUserByEmail(email);
+    const userExists = await this.getUserByEmail(email);
     if (!userExists) throw UserError.UserNotExists();
     const passwordMatch = await bcrypt.compare(password, userExists.password);
     if (!passwordMatch) throw UserError.UserNotExists();
