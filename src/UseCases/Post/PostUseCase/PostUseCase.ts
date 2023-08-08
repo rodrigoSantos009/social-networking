@@ -1,18 +1,18 @@
 import { PostRepository } from "Repository/PostRepository/PostRepository";
 import { PostDTO } from "../PostDTO/PostDTO";
-import { UserRepository } from "Repository/UserRepository/UserRepository";
+import { UserUseCase } from "../../User/UserUseCase/UserUseCase";
 import { UserError } from "../../../Errors/UserErrors/UserError";
 import { Post } from "../../../domain/Entities/Post";
 
 export class PostUseCase {
   constructor(
     public postRepository: PostRepository,
-    public userRepository: UserRepository
+    public userUseCase: UserUseCase
   ) {}
 
   async execute(data: PostDTO) {
-    const userExists = await this.userRepository.getUserById(data.user_id);
-    if(!userExists) throw UserError.UserNotExists();
+    const userExists = await this.userUseCase.getUserById(data.user_id);
+    if (!userExists) throw UserError.UserNotExists();
 
     const post = new Post(data.user_id, data.image, data.description);
     await this.postRepository.savePost(post);
@@ -21,7 +21,7 @@ export class PostUseCase {
 
   async getPostById(postId: string) {
     const post = await this.postRepository.getPostById(postId);
-    if(!post) throw new Error("Post not found");
+    if (!post) throw new Error("Post not found");
 
     return post;
   }
@@ -34,18 +34,19 @@ export class PostUseCase {
 
   async deletePost(postId: string, userId: string) {
     const post = await this.getPostById(postId);
-    if(!post) throw new Error("Post not found!")
+    if (!post) throw new Error("Post not found!");
 
-    const user = await this.userRepository.getUserById(userId);
+    const user = await this.userUseCase.getUserById(userId);
 
-    if (post.user_id !== userId || !user?.site_admin) throw new Error("You can not delete this post!")
+    if (post.user_id !== userId || !user?.site_admin)
+      throw new Error("You can not delete this post!");
 
-    await this.postRepository.deletePost(postId); 
+    await this.postRepository.deletePost(postId);
   }
 
   async getLike(postId: string) {
     const likes = await this.postRepository.getLike(postId);
-    if(!likes) throw new Error("There is no likes!")
+    if (!likes) throw new Error("There is no likes!");
 
     return likes;
   }
@@ -53,8 +54,8 @@ export class PostUseCase {
   async likePost(postId: string, userId: string) {
     const post = await this.getPostById(postId);
     if (!post) throw new Error("Post not found");
-
-    const userExists = await this.userRepository.getUserById(userId);
+    console.log(post);
+    const userExists = await this.userUseCase.getUserById(userId);
     if (!userExists) throw UserError.UserNotExists();
 
     await this.postRepository.likePost(postId, userId);
@@ -62,44 +63,45 @@ export class PostUseCase {
 
   async getCommentById(id: string) {
     const comment = await this.postRepository.getCommentById(id);
-    if(!comment) throw new Error("Comment not found!");
+    if (!comment) throw new Error("Comment not found!");
 
     return comment;
   }
 
   async getCommentsByPost(id: string) {
     const comments = await this.postRepository.getCommentsByPost(id);
-    if(!comments) throw new Error("There is no comment!");
+    if (!comments) throw new Error("There is no comment!");
 
     return comments;
   }
 
   async commentPost(postId: string, userId: string, comment: string) {
     const post = await this.getPostById(postId);
-    if(!post) throw new Error("Post not found!")
+    if (!post) throw new Error("Post not found!");
 
-    const userExists = await this.userRepository.getUserById(userId);
+    const userExists = await this.userUseCase.getUserById(userId);
     if (!userExists) throw UserError.UserNotExists();
-    
+
     await this.postRepository.saveComment(postId, userId, comment);
   }
 
   async deleteComment(commentId: string, postId: string, userId: string) {
-    const post = await this.getPostById(postId)
-    if(!post) throw new Error("Post not found!");
+    const post = await this.getPostById(postId);
+    if (!post) throw new Error("Post not found!");
 
     const comment = await this.getCommentById(commentId);
     if (!comment) throw new Error("Post not found!");
 
-    const user = await this.userRepository.getUserById(userId);
+    const user = await this.userUseCase.getUserById(userId);
     if (!user) throw UserError.UserNotExists();
 
     if (
       comment.user_id !== userId ||
       post.user_id !== userId ||
       !user.site_admin
-    ) throw new Error("You can not delete this!");
-      
+    )
+      throw new Error("You can not delete this!");
+
     await this.postRepository.deleteComment(comment.id);
   }
 }

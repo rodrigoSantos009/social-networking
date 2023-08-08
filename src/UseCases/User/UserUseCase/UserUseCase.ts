@@ -29,7 +29,7 @@ export class UserUseCase {
   }
 
   async getUserById(id: string) {
-    const users = await this.userRepository.getUsers();    
+    const users = await this.getUsers();    
     const user =  users.find(user => user.id === id);
 
     return user ;

@@ -37,10 +37,10 @@ export class UserController {
 
     try {
       const user = await this.userUseCase.getUserById(id);
-
+      console.log(user)
       return res.status(200).json(user);
     } catch (error) {
-      console.log(error);
+      //console.log(error);
       return res.status(500).json({ error });
     }
   }

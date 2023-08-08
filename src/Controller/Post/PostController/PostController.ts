@@ -70,6 +70,7 @@ export class PostController {
 
       return res.status(200).json(likes);
     } catch (error) {
+      console.log(error)
       return res.status(400).json(error);
     }
   }
@@ -80,7 +81,7 @@ export class PostController {
 
     try {
       const post = await this.postUseCase.likePost(postId, userId);
-
+      
       return res.status(201).json(post);
     } catch (error) {
       console.log(error)
