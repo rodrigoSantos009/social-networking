@@ -28,10 +28,10 @@ export class UserUseCase {
   }
 
   async getUserById(id: string) {
-    const user = await this.userRepository.getUserById(id);
-    if (!user) throw UserError.UserNotFound();
-    
-    return user;
+    const users = await this.userRepository.getUsers();    
+    const user =  users.find(user => user.id === id);
+
+    return user ;
   }
 
   async authenticate(email: string, password: string) {
@@ -66,7 +66,7 @@ export class UserUseCase {
   }
 
   async updateUser(data: UpdateUser) {
-    const user = await this.userRepository.getUserById(data.id);
+    const user = await this.getUserById(data.id);
     if (!user) throw UserError.UserNotExists();
 
     const updatedUser = {
@@ -88,10 +88,10 @@ export class UserUseCase {
   }
 
   async followUnfollow(FollowingId: string, followedId: string) {
-    const followingUser = await this.userRepository.getUserById(FollowingId);
+    const followingUser = await this.getUserById(FollowingId);
     if (!followingUser) throw UserError.UserNotExists();
     
-    const followedUser = await this.userRepository.getUserById(followedId);
+    const followedUser = await this.getUserById(followedId);
     if (!followedUser) throw UserError.UserNotExists();
 
     const follower = await this.userRepository.followUnfollow(

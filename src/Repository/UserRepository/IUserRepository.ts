@@ -4,7 +4,6 @@ import { User } from "../../domain/Entities/User";
 export interface IUserRepository {
   save(user: User): Promise<void>;
   getUserByEmail(email: string): Promise<User | null>;
-  getUserById(id: string): Promise<User | null>;
   getUsers(): Promise<User[]>;
   updatePassword(id: string, newPassword: string): Promise<User | null>;
   updateUser(user: UpdateUser): Promise<User | null>;
